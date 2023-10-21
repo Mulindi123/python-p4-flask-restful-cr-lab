@@ -29,17 +29,18 @@ class Plants(Resource):
         new_record = Plant(
             name = request.form["name"],
             image = request.form["image"],
-            price = request.form["price"]
+            price = float(request.form["price"])
         )
         db.session.add(new_record)
         db.session.commit()
 
+
         response_dict = new_record.to_dict()
-        response = make_response(jsonify(response_dict))
+        response = make_response(jsonify(response_dict), 201)
 
         return response
     
-api.add_resource(Plants, "/" )
+api.add_resource(Plants, "/plants")
 
 
 class PlantByID(Resource):
@@ -51,7 +52,20 @@ class PlantByID(Resource):
 
         return response
     
-    
+    def patch(self, id):
+
+        plant = Plant.query.filter_by(id=id).first()
+        for attr in request.form:
+            setattr(plant, attr, request.form.get(attr))
+
+        db.session.add(plant)
+        db.session.commit()
+
+        plant_dict = plant.to_dict()
+
+        response = make_response(jsonify(plant_dict), 200)
+
+        return response
     
 api.add_resource(PlantByID, "/plants/<int:id>")
         
